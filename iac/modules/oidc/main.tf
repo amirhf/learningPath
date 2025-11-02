@@ -43,7 +43,13 @@ resource "aws_iam_role_policy" "ecr_push" {
       {
         Effect = "Allow",
         Action = [
-          "ecr:GetAuthorizationToken",
+          "ecr:GetAuthorizationToken"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
           "ecr:BatchGetImage",
           "ecr:GetDownloadUrlForLayer",
           "ecr:DescribeRepositories",
