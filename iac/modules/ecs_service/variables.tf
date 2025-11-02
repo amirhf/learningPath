@@ -11,14 +11,32 @@ variable "vpc_id" { type = string }
 variable "vpc_cidr" { type = string }
 variable "aws_region" { type = string }
 
-variable "cpu" { type = number default = 256 }
-variable "memory" { type = number default = 512 }
-variable "desired_count" { type = number default = 1 }
-variable "port" { type = number default = 0 } # 0 means no port mapping/inbound
+variable "cpu" {
+  type = number
+  default = 256
+}
+
+variable "memory" {
+  type    = number
+  default = 512
+}
+
+variable "desired_count" {
+  type    = number
+  default = 1
+}
+
+variable "port" {
+  type    = number
+  default = 0
+} # 0 means no port mapping/inbound
 
 variable "env_vars" {
   type    = map(string)
   default = {}
 }
 
-variable "create_sg" { type = bool default = true }
+variable "create_sg" {
+  type    = bool
+  default = true
+}

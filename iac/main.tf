@@ -11,6 +11,101 @@ terraform {
   required_version = ">= 1.6.0"
 }
 
+# ECS services (deploy with desired_count = 0 until images are pushed)
+module "service_rag" {
+  source = "./modules/ecs_service"
+
+  project        = var.project
+  env            = var.env
+  service_name   = "rag"
+  container_name = "rag"
+  image          = format("%s:latest", module.ecr.repository_urls["${var.project}-${var.env}-rag"])
+
+  cluster_name = module.ecs.cluster_name
+  subnet_ids   = module.vpc.private_subnets
+  vpc_id       = module.vpc.vpc_id
+  vpc_cidr     = "10.0.0.0/16"
+  aws_region   = var.aws_region
+
+  cpu            = 256
+  memory         = 512
+  desired_count  = 0
+  port           = 8000
+  env_vars       = { AWS_REGION = var.aws_region }
+}
+
+module "service_gateway" {
+  source = "./modules/ecs_service"
+
+  project        = var.project
+  env            = var.env
+  service_name   = "gateway"
+  container_name = "gateway"
+  image          = format("%s:latest", module.ecr.repository_urls["${var.project}-${var.env}-gateway"])
+
+  cluster_name = module.ecs.cluster_name
+  subnet_ids   = module.vpc.private_subnets
+  vpc_id       = module.vpc.vpc_id
+  vpc_cidr     = "10.0.0.0/16"
+  aws_region   = var.aws_region
+
+  cpu            = 256
+  memory         = 512
+  desired_count  = 0
+  port           = 8080
+  env_vars       = { AWS_REGION = var.aws_region }
+}
+
+module "service_ingestion" {
+  source = "./modules/ecs_service"
+
+  project        = var.project
+  env            = var.env
+  service_name   = "ingestion"
+  container_name = "ingestion"
+  image          = format("%s:latest", module.ecr.repository_urls["${var.project}-${var.env}-ingestion"])
+
+  cluster_name = module.ecs.cluster_name
+  subnet_ids   = module.vpc.private_subnets
+  vpc_id       = module.vpc.vpc_id
+  vpc_cidr     = "10.0.0.0/16"
+  aws_region   = var.aws_region
+
+  cpu           = 256
+  memory        = 512
+  desired_count = 0
+  port          = 0
+  env_vars      = { AWS_REGION = var.aws_region }
+}
+
+# Allow ECS services to connect to Postgres (RDS) on 5432
+resource "aws_security_group_rule" "rds_from_rag" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = module.rds.sg_id
+  source_security_group_id = module.service_rag.sg_id
+}
+
+resource "aws_security_group_rule" "rds_from_gateway" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = module.rds.sg_id
+  source_security_group_id = module.service_gateway.sg_id
+}
+
+resource "aws_security_group_rule" "rds_from_ingestion" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id        = module.rds.sg_id
+  source_security_group_id = module.service_ingestion.sg_id
+}
+
 provider "aws" {
   region = var.aws_region
 }
