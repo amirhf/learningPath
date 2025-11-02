@@ -42,3 +42,8 @@ output "oidc_role_arn" {
   value       = module.oidc.role_arn
   description = "GitHub Actions OIDC role ARN (null if disabled)"
 }
+
+output "gateway_alb_dns_name" {
+  value       = aws_lb.gateway.dns_name
+  description = "Public DNS name of the gateway ALB"
+}
