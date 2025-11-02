@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PlannerOutput",
+  "type": "object",
+  "properties": {
+    "weeks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "week": {"type": "integer"},
+          "lessons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {"type": "string"},
+                "resource_ids": {"type": "array", "items": {"type": "string"}},
+                "est_minutes": {"type": "integer"}
+              },
+              "required": ["title", "est_minutes"]
+            }
+          }
+        },
+        "required": ["week", "lessons"]
+      }
+    }
+  },
+  "required": ["weeks"]
+}

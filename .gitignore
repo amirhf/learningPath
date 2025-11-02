@@ -1,0 +1,31 @@
+# Node
+node_modules/
+.next/
+.out/
+.turbo/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.*
+.pytest_cache/
+
+# Go
+bin/
+build/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+.terraform.lock.hcl
+
+# Docker
+*.log
+
+dist/
+coverage/
+.DS_Store

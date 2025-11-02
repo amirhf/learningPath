@@ -1,0 +1,17 @@
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up tools
+        run: |
+          echo "Phase 0 CI skeleton"
+      - name: Lint placeholders
+        run: |
+          echo "Linting placeholders..."

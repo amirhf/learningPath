@@ -1,0 +1,21 @@
+openapi: 3.0.3
+info:
+  title: Learning Path Gateway API
+  version: 0.1.0
+paths:
+  /api/intake:
+    post: { summary: Create goal, responses: { '200': { description: OK } } }
+  /api/plan:
+    post: { summary: Create plan, responses: { '200': { description: OK } } }
+  /api/plan/{id}:
+    get: { summary: Get plan, responses: { '200': { description: OK } } }
+  /api/plan/{id}/replan:
+    post: { summary: Replan, responses: { '200': { description: OK } } }
+  /api/quiz/lesson/{lessonId}:
+    post: { summary: Generate quiz, responses: { '200': { description: OK } } }
+  /api/progress/lesson/{lessonId}:
+    post: { summary: Update progress, responses: { '200': { description: OK } } }
+  /api/resources/search:
+    get: { summary: RAG search, responses: { '200': { description: OK } } }
+  /api/skills:
+    get: { summary: List skills, responses: { '200': { description: OK } } }

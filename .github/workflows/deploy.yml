@@ -1,0 +1,11 @@
+name: Deploy
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy skeleton
+        run: |
+          echo "Phase 0 deploy skeleton - configure ECR/ECS in Phase 4"

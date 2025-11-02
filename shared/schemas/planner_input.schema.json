@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PlannerInput",
+  "type": "object",
+  "properties": {
+    "goal": {"type": "string"},
+    "skills": {"type": "array", "items": {"type": "string"}},
+    "hours_per_week": {"type": "integer"},
+    "target_date": {"type": "string", "format": "date"},
+    "level": {"type": "integer"},
+    "media_prefs": {"type": "array", "items": {"type": "string"}}
+  },
+  "required": ["goal", "hours_per_week", "level"]
+}

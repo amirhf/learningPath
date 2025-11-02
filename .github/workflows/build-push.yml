@@ -1,0 +1,63 @@
+name: Build and Push Images
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'services/**'
+      - '.github/workflows/build-push.yml'
+  workflow_dispatch: {}
+
+env:
+  AWS_REGION: us-east-1
+  PROJECT: learning-path
+  ENV: dev
+
+jobs:
+  build-and-push:
+    name: Build & Push (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [rag, ingestion, gateway]
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set image and repo
+        id: vars
+        shell: bash
+        run: |
+          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          REPO_NAME="${PROJECT}-${ENV}-${{ matrix.service }}"
+          ECR="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+          IMAGE_TAG=${GITHUB_SHA}
+          echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "ECR=$ECR" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Build image
+        working-directory: services/${{ matrix.service }}
+        run: |
+          docker build -t "$ECR/$REPO_NAME:$IMAGE_TAG" .
+          docker tag "$ECR/$REPO_NAME:$IMAGE_TAG" "$ECR/$REPO_NAME:latest"
+
+      - name: Push image
+        run: |
+          docker push "$ECR/$REPO_NAME:$IMAGE_TAG"
+          docker push "$ECR/$REPO_NAME:latest"
