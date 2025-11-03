@@ -21,3 +21,13 @@ variable "desired_count" {
   default = 1
 }
 variable "aws_region" { type = string }
+
+# Cloud Map service discovery
+variable "service_discovery_namespace_id" {
+  type = string
+}
+
+variable "service_discovery_service_name" {
+  type    = string
+  default = "qdrant"
+}

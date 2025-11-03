@@ -133,6 +133,24 @@ resource "aws_cloudwatch_log_group" "qdrant" {
   retention_in_days = 14
 }
 
+# Cloud Map service discovery for Qdrant
+resource "aws_service_discovery_service" "this" {
+  name = var.service_discovery_service_name
+
+  dns_config {
+    namespace_id  = var.service_discovery_namespace_id
+    routing_policy = "MULTIVALUE"
+    dns_records {
+      type = "A"
+      ttl  = 10
+    }
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
 resource "aws_ecs_service" "qdrant" {
   name            = "${var.project}-${var.env}-qdrant"
   cluster         = var.cluster_name
@@ -149,6 +167,10 @@ resource "aws_ecs_service" "qdrant" {
     subnets         = [var.private_subnet_ids[0]]
     security_groups = [aws_security_group.qdrant_svc.id]
     assign_public_ip = false
+  }
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.this.arn
   }
 }
 

@@ -47,3 +47,8 @@ output "gateway_alb_dns_name" {
   value       = aws_lb.gateway.dns_name
   description = "Public DNS name of the gateway ALB"
 }
+
+output "qdrant_service_discovery_service_arn" {
+  value       = module.qdrant.service_discovery_service_arn
+  description = "Cloud Map service discovery ARN for Qdrant"
+}

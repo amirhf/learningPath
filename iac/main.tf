@@ -111,23 +111,22 @@ resource "aws_service_discovery_service" "rag" {
   name = "rag"
 
   dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.svc.id
+    namespace_id   = aws_service_discovery_private_dns_namespace.svc.id
     routing_policy = "MULTIVALUE"
     dns_records {
       type = "A"
       ttl  = 10
     }
   }
-
   health_check_custom_config {
     failure_threshold = 1
   }
 }
 
-# Secrets Manager: DATABASE_URL
-resource "aws_secretsmanager_secret" "database_url" {
-  name = "${var.project}/${var.env}/DATABASE_URL"
-}
+  # Secrets Manager: DATABASE_URL
+  resource "aws_secretsmanager_secret" "database_url" {
+    name = "${var.project}/${var.env}/DATABASE_URL"
+  }
 
 resource "aws_secretsmanager_secret_version" "database_url" {
   count         = length(var.database_url_value) > 0 ? 1 : 0
@@ -152,10 +151,14 @@ module "service_rag" {
   aws_region   = var.aws_region
 
   cpu           = 256
-  memory        = 512
+  memory        = 2048
   desired_count = 1
   port          = 8000
-  env_vars      = { AWS_REGION = var.aws_region }
+  env_vars = {
+    AWS_REGION = var.aws_region
+    QDRANT_URL = "http://qdrant.${var.project}.${var.env}.local:6333"
+    ENABLE_RERANK = "false"
+  }
   # Cloud Map registration and DB secret
   service_discovery_service_arn = aws_service_discovery_service.rag.arn
   secrets = {
@@ -183,7 +186,7 @@ module "service_gateway" {
   desired_count = 1
   port          = 8080
   env_vars = {
-    AWS_REGION  = var.aws_region
+    AWS_REGION   = var.aws_region
     RAG_BASE_URL = "http://rag.${var.project}.${var.env}.local:8000"
   }
   # ALB integration
@@ -235,7 +238,6 @@ module "service_ingestion" {
   })
 }
 
-# Allow ECS services to connect to Postgres (RDS) on 5432
 resource "aws_security_group_rule" "rds_from_rag" {
   type                     = "ingress"
   from_port                = 5432
@@ -322,26 +324,26 @@ module "rds" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnets
 
-  # Cost-saving defaults
+  # CostSaving defaults
   instance_class    = "db.t4g.micro"
   multi_az          = false
   allocated_storage = 20
   backup_retention  = 7
 }
-
 module "qdrant" {
   source = "./modules/qdrant"
 
-  project               = var.project
-  env                   = var.env
-  cluster_name          = module.ecs.cluster_name
-  vpc_id                = module.vpc.vpc_id
-  vpc_cidr              = "10.0.0.0/16"
-  private_subnet_ids    = module.vpc.private_subnets
-  snapshots_bucket_name = module.s3.snapshots_bucket_name
-  aws_region            = var.aws_region
+  project                        = var.project
+  env                            = var.env
+  cluster_name                   = module.ecs.cluster_name
+  vpc_id                         = module.vpc.vpc_id
+  vpc_cidr                       = "10.0.0.0/16"
+  private_subnet_ids             = module.vpc.private_subnets
+  snapshots_bucket_name          = module.s3.snapshots_bucket_name
+  aws_region                     = var.aws_region
+  service_discovery_namespace_id = aws_service_discovery_private_dns_namespace.svc.id
 
-  # Cost-saving defaults
+  # CostSaving defaults
   cpu           = 512
   memory        = 1024
   desired_count = 1

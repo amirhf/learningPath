@@ -166,7 +166,8 @@ resource "aws_ecs_service" "this" {
   dynamic "service_registries" {
     for_each = var.service_discovery_service_arn != "" ? [1] : []
     content {
-      registry_arn = var.service_discovery_service_arn
+      registry_arn   = var.service_discovery_service_arn
+      container_name = var.container_name
     }
   }
 }
